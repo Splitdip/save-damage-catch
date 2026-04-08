@@ -1,0 +1,891 @@
+{
+  "abaddon": [
+    "chen",
+    "enchantress",
+    "dark-seer",
+    "outworld-destroyer",
+    "pugna"
+  ],
+  "alchemist": [
+    "slark",
+    "huskar",
+    "batrider",
+    "monkey-king",
+    "anti-mage"
+  ],
+  "ancient-apparition": [
+    "phantom-lancer",
+    "storm-spirit",
+    "spectre",
+    "puck",
+    "arc-warden"
+  ],
+  "anti-mage": [
+    "huskar",
+    "meepo",
+    "axe",
+    "legion-commander",
+    "elder-titan"
+  ],
+  "arc-warden": [
+    "broodmother",
+    "chen",
+    "lycan",
+    "dark-seer",
+    "meepo"
+  ],
+  "axe": [
+    "abaddon",
+    "timbersaw",
+    "venomancer",
+    "lifestealer",
+    "pudge"
+  ],
+  "bane": [
+    "chen",
+    "lycan",
+    "dark-seer",
+    "naga-siren",
+    "enchantress"
+  ],
+  "batrider": [
+    "tidehunter",
+    "enigma",
+    "abaddon",
+    "storm-spirit",
+    "queen-of-pain"
+  ],
+  "beastmaster": [
+    "medusa",
+    "elder-titan",
+    "clinkz",
+    "gyrocopter",
+    "bristleback"
+  ],
+  "bloodseeker": [
+    "medusa",
+    "chen",
+    "enchantress",
+    "lycan",
+    "shadow-demon"
+  ],
+  "bounty-hunter": [
+    "naga-siren",
+    "chen",
+    "lycan",
+    "dark-seer",
+    "chaos-knight"
+  ],
+  "brewmaster": [
+    "chen",
+    "shadow-demon",
+    "naga-siren",
+    "dark-seer",
+    "oracle"
+  ],
+  "bristleback": [
+    "slark",
+    "viper",
+    "primal-beast",
+    "legion-commander",
+    "silencer"
+  ],
+  "broodmother": [
+    "earthshaker",
+    "spirit-breaker",
+    "necrophos",
+    "beastmaster",
+    "sand-king"
+  ],
+  "centaur-warrunner": [
+    "lifestealer",
+    "dazzle",
+    "pangolier",
+    "ember-spirit",
+    "juggernaut"
+  ],
+  "chaos-knight": [
+    "sand-king",
+    "phantom-lancer",
+    "naga-siren",
+    "anti-mage",
+    "phoenix"
+  ],
+  "chen": [
+    "earth-spirit",
+    "phantom-lancer",
+    "primal-beast",
+    "slark",
+    "crystal-maiden"
+  ],
+  "clinkz": [
+    "phantom-lancer",
+    "broodmother",
+    "phantom-assassin",
+    "chaos-knight",
+    "naga-siren"
+  ],
+  "clockwerk": [
+    "phantom-lancer",
+    "venomancer",
+    "queen-of-pain",
+    "anti-mage",
+    "storm-spirit"
+  ],
+  "crystal-maiden": [
+    "rubick",
+    "juggernaut",
+    "pudge",
+    "kez",
+    "enigma"
+  ],
+  "dark-seer": [
+    "sven",
+    "weaver",
+    "techies",
+    "faceless-void",
+    "monkey-king"
+  ],
+  "dark-willow": [
+    "naga-siren",
+    "juggernaut",
+    "techies",
+    "puck",
+    "enigma"
+  ],
+  "dawnbreaker": [
+    "silencer",
+    "nyx-assassin",
+    "winter-wyvern",
+    "bristleback",
+    "troll-warlord"
+  ],
+  "dazzle": [
+    "ancient-apparition",
+    "elder-titan",
+    "abaddon",
+    "monkey-king",
+    "axe"
+  ],
+  "death-prophet": [
+    "terrorblade",
+    "broodmother",
+    "keeper-of-the-light",
+    "clinkz",
+    "sniper"
+  ],
+  "disruptor": [
+    "sniper",
+    "natures-prophet",
+    "pangolier",
+    "clinkz",
+    "viper"
+  ],
+  "doom": [
+    "lone-druid",
+    "medusa",
+    "meepo",
+    "batrider",
+    "clinkz"
+  ],
+  "dragon-knight": [
+    "chen",
+    "viper",
+    "shadow-demon",
+    "terrorblade",
+    "necrophos"
+  ],
+  "drow-ranger": [
+    "mars",
+    "earth-spirit",
+    "phantom-lancer",
+    "spectre",
+    "sniper"
+  ],
+  "earth-spirit": [
+    "huskar",
+    "troll-warlord",
+    "kez",
+    "slark",
+    "lifestealer"
+  ],
+  "earthshaker": [
+    "clinkz",
+    "viper",
+    "templar-assassin",
+    "sniper",
+    "clockwerk"
+  ],
+  "elder-titan": [
+    "chen",
+    "lycan",
+    "enchantress",
+    "shadow-demon",
+    "dark-seer"
+  ],
+  "ember-spirit": [
+    "huskar",
+    "slark",
+    "tinker",
+    "oracle",
+    "troll-warlord"
+  ],
+  "enchantress": [
+    "phantom-assassin",
+    "crystal-maiden",
+    "marci",
+    "pudge",
+    "naga-siren"
+  ],
+  "enigma": [
+    "bristleback",
+    "rubick",
+    "spectre",
+    "gyrocopter",
+    "sniper"
+  ],
+  "faceless-void": [
+    "huskar",
+    "broodmother",
+    "meepo",
+    "bane",
+    "legion-commander"
+  ],
+  "grimstroke": [
+    "chen",
+    "lycan",
+    "gyrocopter",
+    "shadow-demon",
+    "dark-seer"
+  ],
+  "gyrocopter": [
+    "venomancer",
+    "viper",
+    "ogre-magi",
+    "sniper",
+    "doom"
+  ],
+  "hoodwink": [
+    "mars",
+    "primal-beast",
+    "axe",
+    "phantom-lancer",
+    "centaur-warrunner"
+  ],
+  "huskar": [
+    "viper",
+    "ancient-apparition",
+    "chen",
+    "naga-siren",
+    "phantom-assassin"
+  ],
+  "invoker": [
+    "puck",
+    "lifestealer",
+    "pangolier",
+    "templar-assassin",
+    "broodmother"
+  ],
+  "io": [
+    "elder-titan",
+    "underlord",
+    "magnus",
+    "dark-willow",
+    "troll-warlord"
+  ],
+  "jakiro": [
+    "rubick",
+    "chen",
+    "clinkz",
+    "elder-titan",
+    "centaur-warrunner"
+  ],
+  "juggernaut": [
+    "morphling",
+    "death-prophet",
+    "lone-druid",
+    "void-spirit",
+    "visage"
+  ],
+  "keeper-of-the-light": [
+    "lycan",
+    "chen",
+    "dark-seer",
+    "enchantress",
+    "shadow-demon"
+  ],
+  "kez": [
+    "tinker",
+    "drow-ranger",
+    "necrophos",
+    "bane",
+    "elder-titan"
+  ],
+  "kunkka": [
+    "lifestealer",
+    "huskar",
+    "ember-spirit",
+    "timbersaw",
+    "faceless-void"
+  ],
+  "legion-commander": [
+    "winter-wyvern",
+    "shadow-demon",
+    "dawnbreaker",
+    "tusk",
+    "monkey-king"
+  ],
+  "leshrac": [
+    "chen",
+    "lycan",
+    "dark-seer",
+    "medusa",
+    "undying"
+  ],
+  "lich": [
+    "shadow-demon",
+    "lycan",
+    "pugna",
+    "bristleback",
+    "chen"
+  ],
+  "lifestealer": [
+    "slardar",
+    "chen",
+    "natures-prophet",
+    "enigma",
+    "troll-warlord"
+  ],
+  "lina": [
+    "axe",
+    "templar-assassin",
+    "phantom-assassin",
+    "bane",
+    "clinkz"
+  ],
+  "lion": [
+    "gyrocopter",
+    "natures-prophet",
+    "dragon-knight",
+    "templar-assassin",
+    "mars"
+  ],
+  "lone-druid": [
+    "underlord",
+    "broodmother",
+    "winter-wyvern",
+    "dark-willow",
+    "monkey-king"
+  ],
+  "luna": [
+    "dark-seer",
+    "bristleback",
+    "rubick",
+    "kunkka",
+    "underlord"
+  ],
+  "lycan": [
+    "naga-siren",
+    "necrophos",
+    "monkey-king",
+    "spirit-breaker",
+    "phoenix"
+  ],
+  "magnus": [
+    "elder-titan",
+    "enigma",
+    "puck",
+    "earthshaker",
+    "wraith-king"
+  ],
+  "marci": [
+    "magnus",
+    "winter-wyvern",
+    "terrorblade",
+    "dark-willow",
+    "troll-warlord"
+  ],
+  "mars": [
+    "elder-titan",
+    "lifestealer",
+    "bane",
+    "void-spirit",
+    "queen-of-pain"
+  ],
+  "medusa": [
+    "anti-mage",
+    "nyx-assassin",
+    "slark",
+    "centaur-warrunner",
+    "dark-seer"
+  ],
+  "meepo": [
+    "elder-titan",
+    "earthshaker",
+    "winter-wyvern",
+    "sven",
+    "underlord"
+  ],
+  "mirana": [
+    "meepo",
+    "terrorblade",
+    "broodmother",
+    "naga-siren",
+    "treant-protector"
+  ],
+  "monkey-king": [
+    "muerta",
+    "batrider",
+    "phoenix",
+    "techies",
+    "brewmaster"
+  ],
+  "morphling": [
+    "bane",
+    "axe",
+    "rubick",
+    "doom",
+    "tinker"
+  ],
+  "muerta": [
+    "nyx-assassin",
+    "wraith-king",
+    "invoker",
+    "axe",
+    "skywrath-mage"
+  ],
+  "naga-siren": [
+    "sand-king",
+    "axe",
+    "tidehunter",
+    "necrophos",
+    "medusa"
+  ],
+  "natures-prophet": [
+    "spectre",
+    "primal-beast",
+    "morphling",
+    "broodmother",
+    "templar-assassin"
+  ],
+  "necrophos": [
+    "muerta",
+    "ancient-apparition",
+    "skywrath-mage",
+    "death-prophet",
+    "leshrac"
+  ],
+  "night-stalker": [
+    "naga-siren",
+    "meepo",
+    "troll-warlord",
+    "beastmaster",
+    "lone-druid"
+  ],
+  "nyx-assassin": [
+    "elder-titan",
+    "visage",
+    "templar-assassin",
+    "beastmaster",
+    "slardar"
+  ],
+  "ogre-magi": [
+    "phantom-lancer",
+    "anti-mage",
+    "naga-siren",
+    "chaos-knight",
+    "broodmother"
+  ],
+  "omniknight": [
+    "elder-titan",
+    "muerta",
+    "doom",
+    "shadow-demon",
+    "undying"
+  ],
+  "oracle": [
+    "death-prophet",
+    "marci",
+    "anti-mage",
+    "omniknight",
+    "io"
+  ],
+  "outworld-destroyer": [
+    "nyx-assassin",
+    "phantom-lancer",
+    "pangolier",
+    "chaos-knight",
+    "enigma"
+  ],
+  "pangolier": [
+    "huskar",
+    "bloodseeker",
+    "terrorblade",
+    "monkey-king",
+    "bane"
+  ],
+  "phantom-assassin": [
+    "axe",
+    "pudge",
+    "bristleback",
+    "timbersaw",
+    "pangolier"
+  ],
+  "phantom-lancer": [
+    "leshrac",
+    "underlord",
+    "tidehunter",
+    "sven",
+    "sand-king"
+  ],
+  "phoenix": [
+    "bloodseeker",
+    "huskar",
+    "morphling",
+    "juggernaut",
+    "lina"
+  ],
+  "primal-beast": [
+    "faceless-void",
+    "underlord",
+    "grimstroke",
+    "disruptor",
+    "clockwerk"
+  ],
+  "puck": [
+    "night-stalker",
+    "broodmother",
+    "riki",
+    "huskar",
+    "dragon-knight"
+  ],
+  "pudge": [
+    "timbersaw",
+    "monkey-king",
+    "ursa",
+    "terrorblade",
+    "pangolier"
+  ],
+  "pugna": [
+    "anti-mage",
+    "pudge",
+    "primal-beast",
+    "chaos-knight",
+    "magnus"
+  ],
+  "queen-of-pain": [
+    "huskar",
+    "puck",
+    "medusa",
+    "ember-spirit",
+    "legion-commander"
+  ],
+  "razor": [
+    "elder-titan",
+    "chen",
+    "morphling",
+    "weaver",
+    "lycan"
+  ],
+  "riki": [
+    "underlord",
+    "broodmother",
+    "naga-siren",
+    "elder-titan",
+    "bloodseeker"
+  ],
+  "ringmaster": [
+    "bloodseeker",
+    "elder-titan",
+    "puck",
+    "keeper-of-the-light",
+    "bane"
+  ],
+  "rubick": [
+    "elder-titan",
+    "templar-assassin",
+    "clinkz",
+    "huskar",
+    "ursa"
+  ],
+  "sand-king": [
+    "zeus",
+    "bristleback",
+    "lifestealer",
+    "phoenix",
+    "queen-of-pain"
+  ],
+  "shadow-demon": [
+    "riki",
+    "tidehunter",
+    "anti-mage",
+    "sand-king",
+    "faceless-void"
+  ],
+  "shadow-fiend": [
+    "brewmaster",
+    "templar-assassin",
+    "invoker",
+    "elder-titan",
+    "terrorblade"
+  ],
+  "shadow-shaman": [
+    "phantom-lancer",
+    "meepo",
+    "terrorblade",
+    "medusa",
+    "omniknight"
+  ],
+  "silencer": [
+    "phantom-lancer",
+    "abaddon",
+    "broodmother",
+    "tidehunter",
+    "arc-warden"
+  ],
+  "skywrath-mage": [
+    "lycan",
+    "templar-assassin",
+    "chen",
+    "medusa",
+    "shadow-demon"
+  ],
+  "slardar": [
+    "luna",
+    "troll-warlord",
+    "muerta",
+    "juggernaut",
+    "drow-ranger"
+  ],
+  "slark": [
+    "grimstroke",
+    "elder-titan",
+    "mars",
+    "disruptor",
+    "leshrac"
+  ],
+  "snapfire": [
+    "bloodseeker",
+    "brewmaster",
+    "bane",
+    "largo",
+    "faceless-void"
+  ],
+  "sniper": [
+    "storm-spirit",
+    "morphling",
+    "spectre",
+    "mars",
+    "pudge"
+  ],
+  "spectre": [
+    "chen",
+    "lycan",
+    "meepo",
+    "undying",
+    "largo"
+  ],
+  "spirit-breaker": [
+    "underlord",
+    "tiny",
+    "ember-spirit",
+    "mars",
+    "clockwerk"
+  ],
+  "storm-spirit": [
+    "anti-mage",
+    "riki",
+    "meepo",
+    "lone-druid",
+    "bane"
+  ],
+  "sven": [
+    "troll-warlord",
+    "templar-assassin",
+    "bristleback",
+    "phantom-assassin",
+    "weaver"
+  ],
+  "techies": [
+    "templar-assassin",
+    "tinker",
+    "bristleback",
+    "lifestealer",
+    "medusa"
+  ],
+  "templar-assassin": [
+    "dark-seer",
+    "terrorblade",
+    "spectre",
+    "medusa",
+    "chen"
+  ],
+  "terrorblade": [
+    "chen",
+    "dark-seer",
+    "shadow-demon",
+    "naga-siren",
+    "axe"
+  ],
+  "tidehunter": [
+    "elder-titan",
+    "timbersaw",
+    "huskar",
+    "razor",
+    "slark"
+  ],
+  "timbersaw": [
+    "chen",
+    "pugna",
+    "lycan",
+    "outworld-destroyer",
+    "doom"
+  ],
+  "tinker": [
+    "leshrac",
+    "anti-mage",
+    "pudge",
+    "lifestealer",
+    "largo"
+  ],
+  "tiny": [
+    "lifestealer",
+    "necrophos",
+    "chen",
+    "viper",
+    "timbersaw"
+  ],
+  "treant-protector": [
+    "chen",
+    "lycan",
+    "dark-seer",
+    "naga-siren",
+    "enchantress"
+  ],
+  "troll-warlord": [
+    "axe",
+    "brewmaster",
+    "slark",
+    "windranger",
+    "terrorblade"
+  ],
+  "tusk": [
+    "terrorblade",
+    "timbersaw",
+    "elder-titan",
+    "underlord",
+    "ember-spirit"
+  ],
+  "underlord": [
+    "chen",
+    "rubick",
+    "elder-titan",
+    "lifestealer",
+    "juggernaut"
+  ],
+  "undying": [
+    "medusa",
+    "elder-titan",
+    "chen",
+    "naga-siren",
+    "luna"
+  ],
+  "ursa": [
+    "wraith-king",
+    "brewmaster",
+    "naga-siren",
+    "weaver",
+    "venomancer"
+  ],
+  "vengeful-spirit": [
+    "chen",
+    "dark-seer",
+    "naga-siren",
+    "elder-titan",
+    "lycan"
+  ],
+  "venomancer": [
+    "phantom-lancer",
+    "arc-warden",
+    "storm-spirit",
+    "terrorblade",
+    "legion-commander"
+  ],
+  "viper": [
+    "phantom-lancer",
+    "tinker",
+    "arc-warden",
+    "morphling",
+    "windranger"
+  ],
+  "visage": [
+    "riki",
+    "phantom-lancer",
+    "bristleback",
+    "terrorblade",
+    "gyrocopter"
+  ],
+  "void-spirit": [
+    "meepo",
+    "huskar",
+    "elder-titan",
+    "ember-spirit",
+    "troll-warlord"
+  ],
+  "warlock": [
+    "chen",
+    "largo",
+    "sand-king",
+    "weaver",
+    "tidehunter"
+  ],
+  "weaver": [
+    "faceless-void",
+    "rubick",
+    "morphling",
+    "riki",
+    "bane"
+  ],
+  "windranger": [
+    "centaur-warrunner",
+    "mars",
+    "bane",
+    "axe",
+    "puck"
+  ],
+  "winter-wyvern": [
+    "timbersaw",
+    "necrophos",
+    "anti-mage",
+    "sand-king",
+    "leshrac"
+  ],
+  "witch-doctor": [
+    "elder-titan",
+    "medusa",
+    "brewmaster",
+    "broodmother",
+    "muerta"
+  ],
+  "wraith-king": [
+    "underlord",
+    "warlock",
+    "phantom-lancer",
+    "necrophos",
+    "timbersaw"
+  ],
+  "zeus": [
+    "broodmother",
+    "meepo",
+    "storm-spirit",
+    "huskar",
+    "visage"
+  ],
+  "largo": [
+    "chen",
+    "huskar",
+    "lycan",
+    "faceless-void",
+    "anti-mage"
+  ]
+}
