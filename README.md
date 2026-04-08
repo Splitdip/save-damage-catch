@@ -27,7 +27,11 @@ Each category is rated from:
 1 = light
 2 = consistent
 3 = core identity
+
+
 How It Works
+
+
 1. Draft Input
 
 Users select heroes for Radiant and Dire.
@@ -39,6 +43,7 @@ The tool sums up:
 total Save
 total Damage
 total Catch
+
 3. Draft Evaluation
 
 The system identifies:
@@ -46,14 +51,18 @@ The system identifies:
 missing elements (e.g. no Save)
 over-invested areas (e.g. too much Damage)
 general balance of the draft
+
 4. Suggestions
 
 The tool recommends heroes that:
 
-fill missing categories
-balance the draft
-avoid over-stacking existing strengths
-Example Logic
+* fill missing categories
+* balance the draft
+* avoid over-stacking existing strengths
+
+
+Example Logic:
+
 If a draft has:
 high Damage
 low Save
@@ -78,9 +87,12 @@ Hero Counters
 
 Each hero will have:
 
-top counter heroes
-based on matchup data
+top counter heroes based on matchup data
+
 Future Suggestion Types
+
 SDC Suggestions → based on Save/Damage/Catch gaps
+
 Counter Suggestions → based on enemy draft
+
 Hybrid Suggestions → heroes that do both
