@@ -15,8 +15,11 @@ The Core Idea
 Each hero is rated across three categories:
 
 Save → Ability to protect teammates or negate enemy initiation
+
 Damage → Ability to kill heroes / scale / win fights
+
 Catch → Ability to start fights, control targets, or punish positioning
+
 
 Each category is rated from:
 
