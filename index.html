@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dota 2 Draft Assistant</title>
+<style>
+/* ── Tokens ─────────────────────────────────────────────── */
+:root {
+  --bg:          #090f14;
+  --surface:     #101820;
+  --surface-2:   #0d1420;
+  --surface-3:   #0a1018;
+  --border:      #1a2a38;
+  --border-hi:   #28404f;
+  --text:        #dce8f4;
+  --muted:       #6e8fa8;
+  --dim:         #334f65;
+
+  --blue:        #4191d8;
+  --blue-dim:    #0c1e30;
+  --red:         #d94f4f;
+  --red-dim:     #2a1010;
+  --green:       #5a9c18;
+  --green-dim:   #152808;
+
+  --radiant:        #7cd987;
+  --radiant-bg:     #0c2515;
+  --radiant-border: #1d4d2a;
+  --dire:           #e88080;
+  --dire-bg:        #280e0e;
+  --dire-border:    #5e2828;
+
+  --cnt-accent:  #b96de8;
+  --cnt-bg:      #180d26;
+  --cnt-border:  #3f1e68;
+  --hyb-accent:  #e89a1c;
+  --hyb-bg:      #1e1404;
+  --hyb-border:  #6e4606;
+}
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+body {
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  background:var(--bg); color:var(--text); min-height:100vh; font-size:13px;
+}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:99px}
+
+/* ── Shell ──────────────────────────────────────────────── */
+.app{padding:18px 24px;max-width:1480px;margin:0 auto}
+.app-header{display:flex;align-items:baseline;gap:12px;margin-bottom:18px}
+.app-title{font-size:18px;font-weight:700;letter-spacing:.03em}
+.app-subtitle{font-size:11px;color:var(--muted)}
+
+/* ── Cards ──────────────────────────────────────────────── */
+.team-panel,.panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+
+/* ── Teams row ──────────────────────────────────────────── */
+.teams{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.team-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.team-label{font-size:10px;font-weight:700;padding:4px 12px;border-radius:6px;letter-spacing:.06em;text-transform:uppercase}
+.radiant-label{background:var(--radiant-bg);color:var(--radiant);border:1px solid var(--radiant-border)}
+.dire-label{background:var(--dire-bg);color:var(--dire);border:1px solid var(--dire-border)}
+.team-hint{font-size:10px;color:var(--dim)}
+
+/* ── Slots ──────────────────────────────────────────────── */
+.slots{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px}
+.slot{
+  aspect-ratio:3/4;border:1px dashed var(--border-hi);border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;overflow:hidden;position:relative;
+  background:var(--surface-2);transition:border-color .15s,transform .12s
+}
+.slot:hover{border-color:var(--muted);transform:translateY(-2px)}
+.slot.filled{border-style:solid;border-color:var(--border-hi)}
+.slot img,.hero-thumb img,.sugg-img{width:100%;height:100%;object-fit:cover;object-position:top}
+.slot-name{
+  position:absolute;top:0;left:0;right:0;background:rgba(0,0,0,.65);
+  font-size:8px;color:#fff;text-align:center;padding:2px 3px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+.slot-tags{
+  position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.72);
+  display:flex;justify-content:center;gap:3px;padding:3px 2px
+}
+.slot-empty-icon{font-size:22px;color:var(--dim)}
+.remove-btn{
+  position:absolute;top:3px;right:3px;width:15px;height:15px;border-radius:50%;
+  background:rgba(210,50,50,.9);color:#fff;font-size:9px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;opacity:0;transition:opacity .15s;z-index:4
+}
+.slot:hover .remove-btn{opacity:1}
+
+/* ── Tags ───────────────────────────────────────────────── */
+.tag{font-size:9px;font-weight:700;padding:1px 4px;border-radius:3px}
+.tag-s{background:var(--blue-dim);color:#8fd3ff}
+.tag-d{background:var(--red-dim);color:#ff9f9f}
+.tag-c{background:var(--green-dim);color:#b9e87f}
+.mini-tag{font-size:7px;padding:1px 2px;border-radius:2px;font-weight:700}
+
+/* ── Bars ───────────────────────────────────────────────── */
+.bars{display:flex;flex-direction:column;gap:6px}
+.bar-row{display:flex;align-items:center;gap:8px}
+.bar-label{font-size:11px;color:var(--muted);width:54px;flex-shrink:0}
+.bar-track{flex:1;height:7px;background:var(--surface-2);border-radius:99px;overflow:hidden;border:1px solid var(--border)}
+.bar-fill{height:100%;border-radius:99px;transition:width .35s}
+.bar-val{font-size:12px;font-weight:700;width:22px;text-align:right;color:var(--text)}
+.bar-s .bar-fill{background:var(--blue)}
+.bar-d .bar-fill{background:var(--red)}
+.bar-c .bar-fill{background:var(--green)}
+
+/* ── Alerts ─────────────────────────────────────────────── */
+.team-alerts{margin-top:12px;display:flex;flex-direction:column;gap:6px}
+.alert{font-size:11px;line-height:1.4;padding:7px 10px;border-radius:8px;font-weight:600}
+.alert-danger{background:#2c1212;color:#ff9898;border:1px solid #5a2c2c}
+.alert-warn{background:#281e07;color:#ffd060;border:1px solid #624c0e}
+.alert-ok{background:#0e2416;color:#8ae69a;border:1px solid #215c36}
+.alert-info{background:#0c1b2e;color:#90c8ff;border:1px solid #1c3e60}
+
+/* ── Bottom: pool (fixed) + suggestions (flex) ──────────── */
+.bottom-grid{display:grid;grid-template-columns:320px 1fr;gap:14px;align-items:start}
+
+.panel-title{font-size:10px;font-weight:800;color:var(--muted);margin-bottom:12px;text-transform:uppercase;letter-spacing:.1em}
+
+/* ── Buttons ────────────────────────────────────────────── */
+.team-btns{display:flex;gap:6px;margin-bottom:10px}
+.team-btn{
+  font-size:11px;padding:5px 14px;border-radius:8px;border:1px solid var(--border-hi);
+  background:var(--surface-2);color:var(--muted);cursor:pointer;font-weight:700;transition:all .15s
+}
+.team-btn.active-r{background:var(--radiant-bg);color:var(--radiant);border-color:var(--radiant-border)}
+.team-btn.active-d{background:var(--dire-bg);color:var(--dire);border-color:var(--dire-border)}
+
+/* ── Pool ───────────────────────────────────────────────── */
+.search-box{
+  width:100%;padding:8px 11px;font-size:12px;border:1px solid var(--border-hi);border-radius:9px;
+  background:var(--surface-2);color:var(--text);margin-bottom:10px
+}
+.search-box:focus{outline:none;border-color:var(--muted)}
+.search-box::placeholder{color:var(--dim)}
+.hero-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));
+  gap:5px;max-height:380px;overflow-y:auto;padding-right:4px
+}
+.hero-thumb{
+  position:relative;aspect-ratio:3/4;border:1px solid var(--border);border-radius:6px;
+  cursor:pointer;overflow:hidden;background:var(--surface-2);transition:border-color .1s,transform .1s
+}
+.hero-thumb:hover{border-color:var(--border-hi);transform:translateY(-1px)}
+.hero-thumb.used{opacity:.2;pointer-events:none}
+.hero-thumb-name{
+  position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.72);
+  font-size:7px;color:#fff;text-align:center;padding:1px 2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+.hero-thumb-tags{position:absolute;top:1px;right:1px;display:flex;flex-direction:column;gap:1px}
+
+/* ── Suggestions panel ──────────────────────────────────── */
+.suggestions-panel{padding:14px 16px}
+.suggestions-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+
+/* each suggestion column */
+.sugg-col{
+  background:var(--surface-2);border:1px solid var(--border);border-radius:10px;
+  padding:12px 12px 14px;display:flex;flex-direction:column;min-width:0
+}
+.col-header{
+  display:flex;align-items:center;gap:7px;
+  padding-bottom:10px;margin-bottom:10px;border-bottom:1px solid var(--border);flex-shrink:0
+}
+.col-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.dot-sdc{background:var(--blue)}
+.dot-counter{background:var(--cnt-accent)}
+.dot-hybrid{background:var(--hyb-accent)}
+.col-title{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--text)}
+.col-sub{font-size:10px;font-weight:500;color:var(--muted);margin-left:auto}
+
+.col-scroll{overflow-y:auto;max-height:680px;padding-right:4px}
+.sugg-list{display:flex;flex-direction:column;gap:6px}
+
+/* ── Suggestion item ─────────────────────────────────────── */
+.sugg-item{
+  display:flex;align-items:center;gap:9px;padding:9px 10px;
+  border-radius:9px;cursor:pointer;background:var(--surface);
+  border:1px solid var(--border);transition:border-color .15s,transform .12s;position:relative
+}
+.sugg-item:hover{transform:translateY(-1px)}
+.sdc-item:hover{border-color:var(--blue)}
+.counter-item{border-left:2px solid var(--cnt-border)}
+.counter-item:hover{border-color:var(--cnt-accent);border-left-color:var(--cnt-accent)}
+.hybrid-item{border-left:2px solid var(--hyb-border)}
+.hybrid-item:hover{border-color:var(--hyb-accent);border-left-color:var(--hyb-accent)}
+
+/* rank-1 gets a subtle green tint */
+.sugg-item.rank-top{border-color:#1f3a22;background:#0e1e11}
+.sugg-item.rank-top:hover{border-color:#3fdb64}
+
+/* ── Rank number — descending green hierarchy ────────────── */
+.sugg-rank{font-weight:800;width:22px;text-align:center;flex-shrink:0;line-height:1}
+.rk-1 {color:#3fdb64;font-size:18px}
+.rk-2 {color:#34c455;font-size:16px}
+.rk-3 {color:#28aa46;font-size:14px}
+.rk-4 {color:#1e8e36;font-size:13px}
+.rk-5 {color:#1a7a2e;font-size:13px}
+.rk-6 {color:#4a7a5a;font-size:12px}
+.rk-7 {color:#41686c;font-size:12px}
+.rk-8 {color:#395660;font-size:12px}
+.rk-9 {color:#30484f;font-size:11px}
+.rk-10{color:#284048;font-size:11px}
+
+/* ── Hero portrait in card ───────────────────────────────── */
+.sugg-img{width:38px;height:50px;border-radius:5px;flex-shrink:0;background:var(--surface-3);object-fit:cover;object-position:top}
+
+/* ── Card text ───────────────────────────────────────────── */
+.sugg-info{flex:1;min-width:0}
+.sugg-name{font-size:12px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sugg-reason{font-size:10px;color:var(--muted);margin-top:2px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sugg-scores{display:flex;gap:3px;margin-top:5px}
+
+/* ── Badges ──────────────────────────────────────────────── */
+.counter-count,.hybrid-badge,.matchup-badge{
+  font-size:9px;font-weight:700;padding:2px 5px;border-radius:4px;
+  white-space:nowrap;flex-shrink:0;align-self:flex-start
+}
+.counter-count{background:var(--cnt-bg);color:var(--cnt-accent);border:1px solid var(--cnt-border)}
+.hybrid-badge{background:var(--hyb-bg);color:var(--hyb-accent);border:1px solid var(--hyb-border)}
+.matchup-badge{background:#0d2034;color:#8cc8ff;border:1px solid #224e7a}
+
+/* contextual enemy badges */
+.enemy-badges{
+  position:absolute;top:7px;right:9px;display:flex;gap:4px;align-items:center;max-width:108px;flex-wrap:wrap;justify-content:flex-end
+}
+.enemy-badge{
+  width:18px;height:18px;border-radius:50%;overflow:hidden;flex-shrink:0;
+  border:1px solid rgba(255,96,96,.65); box-shadow:0 0 0 1px rgba(120,14,14,.45),0 0 8px rgba(255,80,80,.18);
+  background:#140b0b;
+}
+.enemy-badge img{width:100%;height:100%;object-fit:cover}
+.enemy-badge .img-fallback{font-size:7px;padding:0}
+.badge-wrap{
+  display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;margin-left:4px
+}
+
+
+/* ── Empties ─────────────────────────────────────────────── */
+.no-sugg{font-size:11px;color:var(--dim);padding:12px 0}
+
+/* ── Image fallback ──────────────────────────────────────── */
+.img-fallback{
+  display:flex;align-items:center;justify-content:center;
+  width:100%;height:100%;
+  background:linear-gradient(180deg,#12202f,#0d1520);
+  color:var(--muted);font-size:10px;font-weight:700;text-align:center;padding:4px
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media(max-width:1100px){.bottom-grid{grid-template-columns:1fr}}
+@media(max-width:860px){.teams{grid-template-columns:1fr}.suggestions-grid{grid-template-columns:1fr}}
+
+/* ── Reset button ────────────────────────────────────────── */
+.reset-btn{
+  margin-left:auto;font-size:10px;font-weight:700;padding:4px 11px;
+  border-radius:6px;border:1px solid var(--border-hi);
+  background:transparent;color:var(--dim);cursor:pointer;
+  transition:all .15s;letter-spacing:.03em
+}
+.reset-btn:hover{background:#2c1212;color:#e88080;border-color:#5a2c2c}
+
+/* ── Whole-draft badge ───────────────────────────────────── */
+.whole-draft-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:9px;font-weight:700;padding:3px 7px;border-radius:4px;
+  background:#1c1500;color:#f5c842;border:1px solid #7a5e0a;
+  white-space:nowrap;flex-shrink:0;align-self:flex-start
+}
+.whole-draft-star{font-size:10px;line-height:1}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="app-header">
+    <span class="app-title">Dota 2 Draft Assistant</span>
+    <span class="app-subtitle">Save · Damage · Catch</span>
+    <button class="reset-btn" onclick="resetDraft()">Reset Draft</button>
+  </div>
+
+  <div class="teams">
+    <div class="team-panel">
+      <div class="team-header">
+        <span class="team-label radiant-label">Radiant</span>
+        <span class="team-hint">Click heroes below to add · hover slot to remove</span>
+      </div>
+      <div class="slots" id="slots-radiant"></div>
+      <div class="bars"  id="bars-radiant"></div>
+      <div class="team-alerts" id="alerts-radiant"></div>
+    </div>
+    <div class="team-panel">
+      <div class="team-header">
+        <span class="team-label dire-label">Dire</span>
+        <span class="team-hint">Click heroes below to add · hover slot to remove</span>
+      </div>
+      <div class="slots" id="slots-dire"></div>
+      <div class="bars"  id="bars-dire"></div>
+      <div class="team-alerts" id="alerts-dire"></div>
+    </div>
+  </div>
+
+  <div class="bottom-grid">
+
+    <div class="panel">
+      <div class="panel-title">Hero Pool</div>
+      <div class="team-btns">
+        <button class="team-btn active-r" id="btn-radiant" onclick="setTarget('radiant')">+ Radiant</button>
+        <button class="team-btn"          id="btn-dire"    onclick="setTarget('dire')"   >+ Dire</button>
+      </div>
+      <input class="search-box" id="hero-search" placeholder="Search heroes…" oninput="renderPool()">
+      <div class="hero-grid" id="hero-grid"></div>
+    </div>
+
+    <div class="panel suggestions-panel">
+      <div class="panel-title">Suggestions</div>
+      <div class="team-btns">
+        <button class="team-btn active-r" id="sugg-btn-radiant" onclick="setSuggTarget('radiant')">Radiant</button>
+        <button class="team-btn"          id="sugg-btn-dire"    onclick="setSuggTarget('dire')"   >Dire</button>
+      </div>
+      <div id="spectral-status" style="font-size:10px;color:var(--muted);margin:-2px 0 10px 1px;">Spectral.stats offline</div>
+
+      <div class="suggestions-grid">
+
+        <div class="sugg-col">
+          <div class="col-header">
+            <span class="col-dot dot-sdc"></span>
+            <span class="col-title">SDC</span>
+            <span class="col-sub">Draft balance</span>
+          </div>
+          <div class="col-scroll">
+            <div class="sugg-list" id="suggestions-sdc"></div>
+          </div>
+        </div>
+
+        <div class="sugg-col">
+          <div class="col-header">
+            <span class="col-dot dot-counter"></span>
+            <span class="col-title">Counters</span>
+            <span class="col-sub" id="counter-subtitle">vs Enemy</span>
+          </div>
+          <div class="col-scroll">
+            <div class="sugg-list" id="suggestions-counter"></div>
+          </div>
+        </div>
+
+        <div class="sugg-col">
+          <div class="col-header">
+            <span class="col-dot dot-hybrid"></span>
+            <span class="col-title">Hybrid</span>
+            <span class="col-sub">SDC + Matchup</span>
+          </div>
+          <div class="col-scroll">
+            <div class="sugg-list" id="suggestions-hybrid"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════════
+   HERO DATA
+════════════════════════════════════════════════════════════ */
+let HEROES = {
+  "abaddon":{s:3,d:1,c:1},
+  "alchemist":{s:1,d:2,c:2},
+  "ancient apparition":{s:0,d:3,c:1},
+  "anti-mage":{s:0,d:3,c:2},
+  "arc warden":{s:1,d:3,c:1},
+  "axe":{s:1,d:3,c:3},
+  "bane":{s:1,d:1,c:3},
+  "batrider":{s:1,d:2,c:3},
+  "beastmaster":{s:1,d:3,c:3},
+  "bloodseeker":{s:0,d:3,c:2},
+  "bounty hunter":{s:2,d:2,c:2},
+  "brewmaster":{s:1,d:2,c:2},
+  "bristleback":{s:0,d:3,c:1},
+  "broodmother":{s:0,d:3,c:2},
+  "centaur warrunner":{s:2,d:2,c:2},
+  "chaos knight":{s:1,d:2,c:2},
+  "chen":{s:2,d:2,c:1},
+  "clinkz":{s:0,d:3,c:1},
+  "clockwerk":{s:1,d:1,c:3},
+  "crystal maiden":{s:0,d:2,c:2},
+  "dark seer":{s:2,d:2,c:2},
+  "dark willow":{s:2,d:2,c:2},
+  "dawnbreaker":{s:3,d:2,c:1},
+  "dazzle":{s:3,d:2,c:1},
+  "death prophet":{s:0,d:3,c:1},
+  "disruptor":{s:2,d:2,c:3},
+  "doom":{s:0,d:3,c:3},
+  "dragon knight":{s:0,d:2,c:3},
+  "drow ranger":{s:0,d:3,c:2},
+  "earth spirit":{s:2,d:2,c:3},
+  "earthshaker":{s:1,d:2,c:3},
+  "elder titan":{s:1,d:2,c:2},
+  "ember spirit":{s:0,d:2,c:3},
+  "enchantress":{s:1,d:2,c:2},
+  "enigma":{s:0,d:2,c:3},
+  "faceless void":{s:0,d:2,c:3},
+  "grimstroke":{s:1,d:2,c:3},
+  "gyrocopter":{s:0,d:3,c:1},
+  "hoodwink":{s:0,d:3,c:2},
+  "huskar":{s:0,d:3,c:2},
+  "invoker":{s:1,d:3,c:2},
+  "io":{s:3,d:2,c:0},
+  "jakiro":{s:0,d:3,c:2},
+  "juggernaut":{s:2,d:3,c:0},
+  "keeper of the light":{s:3,d:2,c:2},
+  "kez":{s:0,d:3,c:1},
+  "kunkka":{s:1,d:2,c:3},
+  "legion commander":{s:2,d:2,c:2},
+  "largo":{s:2,d:2,c:1},
+  "leshrac":{s:0,d:3,c:1},
+  "lich":{s:1,d:3,c:2},
+  "lifestealer":{s:2,d:2,c:1},
+  "lina":{s:0,d:3,c:1},
+  "lion":{s:0,d:3,c:3},
+  "lone druid":{s:1,d:2,c:2},
+  "luna":{s:0,d:3,c:1},
+  "lycan":{s:1,d:3,c:2},
+  "magnus":{s:1,d:2,c:3},
+  "marci":{s:2,d:2,c:2},
+  "mars":{s:2,d:2,c:2},
+  "medusa":{s:0,d:3,c:1},
+  "meepo":{s:0,d:3,c:2},
+  "mirana":{s:2,d:2,c:2},
+  "monkey king":{s:0,d:3,c:2},
+  "morphling":{s:0,d:3,c:2},
+  "muerta":{s:1,d:3,c:1},
+  "naga siren":{s:1,d:3,c:2},
+  "nature's prophet":{s:0,d:3,c:3},
+  "necrophos":{s:1,d:3,c:1},
+  "night stalker":{s:0,d:2,c:3},
+  "nyx assassin":{s:0,d:3,c:2},
+  "ogre magi":{s:1,d:2,c:2},
+  "omniknight":{s:3,d:2,c:1},
+  "oracle":{s:3,d:2,c:1},
+  "outworld destroyer":{s:2,d:2,c:1},
+  "pangolier":{s:0,d:2,c:3},
+  "phantom assassin":{s:0,d:3,c:1},
+  "phantom lancer":{s:0,d:3,c:1},
+  "phoenix":{s:2,d:3,c:0},
+  "primal beast":{s:0,d:2,c:3},
+  "puck":{s:0,d:3,c:2},
+  "pudge":{s:1,d:3,c:2},
+  "pugna":{s:2,d:3,c:1},
+  "queen of pain":{s:0,d:3,c:1},
+  "razor":{s:0,d:2,c:1},
+  "riki":{s:1,d:3,c:2},
+  "ringmaster":{s:2,d:2,c:1},
+  "rubick":{s:1,d:2,c:2},
+  "sand king":{s:0,d:3,c:2},
+  "shadow demon":{s:3,d:2,c:2},
+  "shadow fiend":{s:1,d:3,c:2},
+  "shadow shaman":{s:0,d:2,c:3},
+  "silencer":{s:2,d:2,c:2},
+  "skywrath mage":{s:0,d:3,c:2},
+  "slardar":{s:0,d:3,c:3},
+  "slark":{s:1,d:2,c:3},
+  "snapfire":{s:1,d:2,c:1},
+  "sniper":{s:0,d:3,c:1},
+  "spectre":{s:0,d:3,c:3},
+  "spirit breaker":{s:1,d:2,c:3},
+  "storm spirit":{s:0,d:3,c:2},
+  "sven":{s:1,d:3,c:2},
+  "techies":{s:1,d:3,c:1},
+  "templar assassin":{s:0,d:3,c:2},
+  "terrorblade":{s:1,d:3,c:1},
+  "tidehunter":{s:1,d:3,c:2},
+  "timbersaw":{s:0,d:3,c:0},
+  "tinker":{s:0,d:3,c:1},
+  "tiny":{s:1,d:2,c:3},
+  "treant protector":{s:2,d:1,c:2},
+  "troll warlord":{s:0,d:2,c:2},
+  "tusk":{s:2,d:2,c:2},
+  "underlord":{s:2,d:2,c:3},
+  "undying":{s:2,d:2,c:1},
+  "ursa":{s:0,d:3,c:2},
+  "vengeful spirit":{s:3,d:2,c:2},
+  "venomancer":{s:2,d:2,c:2},
+  "viper":{s:1,d:3,c:2},
+  "visage":{s:1,d:2,c:1},
+  "void spirit":{s:0,d:3,c:2},
+  "warlock":{s:2,d:3,c:1},
+  "weaver":{s:1,d:3,c:0},
+  "windranger":{s:1,d:2,c:2},
+  "winter wyvern":{s:2,d:3,c:2},
+  "witch doctor":{s:1,d:3,c:2},
+  "wraith king":{s:1,d:3,c:2},
+  "zeus":{s:0,d:3,c:0}
+};
+
+/* ════════════════════════════════════════════════════════════
+   APP STATE
+════════════════════════════════════════════════════════════ */
+const state = { radiant:[], dire:[], target:'radiant', suggTarget:'radiant' };
+const MAX   = 5;
+
+const runtime = {
+  simpleCounters:{}, spectralByHeroId:{},
+  heroNameToId:{}, heroIdToName:{}, heroNameToTag:{},
+  // heroAliases: Map from alias/abbrev (lowercase) → canonical hero name key
+  heroAliases:{},
+  loaded:{ heroes:false, counters:false, spectral:false }
+};
+
+/* ════════════════════════════════════════════════════════════
+   UTILITIES
+════════════════════════════════════════════════════════════ */
+function normalizeName(s){ return String(s||'').trim().toLowerCase().replace(/[’'`]/g,"'").replace(/\s+/g,' '); }
+function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+function enemy(t){ return t==='radiant'?'dire':'radiant'; }
+
+/* Rank CSS class — bright green #1 fading to dim by #10 */
+function rkCls(rank){
+  const r = Math.min(rank, 10);
+  return `rk-${r}`;
+}
+
+/* ── Image helpers ──────────────────────────────────────── */
+function fallbackTag(name){
+  const map={
+    "ancient apparition":"ancient_apparition","anti-mage":"antimage","arc warden":"arc_warden",
+    "bounty hunter":"bounty_hunter","centaur warrunner":"centaur","chaos knight":"chaos_knight",
+    "crystal maiden":"crystal_maiden","dark seer":"dark_seer","dark willow":"dark_willow",
+    "death prophet":"death_prophet","dragon knight":"dragon_knight","drow ranger":"drow_ranger",
+    "earth spirit":"earth_spirit","elder titan":"elder_titan","ember spirit":"ember_spirit",
+    "faceless void":"faceless_void","keeper of the light":"keeper_of_the_light",
+    "legion commander":"legion_commander","lifestealer":"life_stealer","lone druid":"lone_druid",
+    "monkey king":"monkey_king","nature's prophet":"furion","naga siren":"naga_siren",
+    "night stalker":"night_stalker","nyx assassin":"nyx_assassin","ogre magi":"ogre_magi",
+    "outworld destroyer":"obsidian_destroyer","phantom assassin":"phantom_assassin",
+    "phantom lancer":"phantom_lancer","primal beast":"primal_beast","queen of pain":"queenofpain",
+    "sand king":"sand_king","shadow demon":"shadow_demon","shadow fiend":"nevermore",
+    "shadow shaman":"shadow_shaman","skywrath mage":"skywrath_mage","spirit breaker":"spirit_breaker",
+    "storm spirit":"storm_spirit","templar assassin":"templar_assassin","treant protector":"treant",
+    "troll warlord":"troll_warlord","vengeful spirit":"vengefulspirit","void spirit":"void_spirit",
+    "winter wyvern":"winter_wyvern","witch doctor":"witch_doctor","wraith king":"skeleton_king",
+    "io":"wisp","windranger":"windrunner","zeus":"zuus","clockwerk":"rattletrap",
+    "doom":"doom_bringer","necrophos":"necrolyte","underlord":"abyssal_underlord",
+    "magnus":"magnataur","timbersaw":"shredder"
+  };
+  return map[name]||name.replace(/['']/g,'').replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
+}
+function imgUrl(name){
+  const key=normalizeName(name);
+  const tag=runtime.heroNameToTag[key]||fallbackTag(key);
+  return `https://cdn.cloudflare.steamstatic.com/apps/dota2/images/dota_react/heroes/${tag}.png`;
+}
+function imgTagMarkup(name,cls=''){
+  const src=imgUrl(name);
+  const esc=name.replace(/"/g,'&quot;');
+  const abbr=esc.split(' ').map(x=>x[0]).join('').slice(0,3).toUpperCase();
+  return `<img class="${cls}" src="${src}" alt="${esc}" onerror="this.onerror=null;this.outerHTML='<div class=&quot;img-fallback ${cls}&quot;>${abbr}</div>'">`;
+}
+
+function miniImgUrl(name){
+  const key=normalizeName(name);
+  const tag=runtime.heroNameToTag[key]||fallbackTag(key);
+  return `https://cdn.cloudflare.steamstatic.com/apps/dota2/images/heroes/${tag}_icon.png`;
+}
+function miniEnemyBadge(name){
+  const src=miniImgUrl(name);
+  const esc=name.replace(/"/g,'&quot;');
+  const abbr=esc.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase();
+  return `<span class="enemy-badge" title="${esc}"><img src="${src}" alt="${esc}" onerror="this.onerror=null;this.outerHTML='<span class=&quot;enemy-badge&quot;><span class=&quot;img-fallback&quot;>${abbr}</span></span>'"></span>`;
+}
+
+function normalizeCounterKey(raw){
+  const ov={
+    "anti-mage":"anti-mage","arc-warden":"arc warden","ancient-apparition":"ancient apparition",
+    "bounty-hunter":"bounty hunter","centaur-warrunner":"centaur warrunner","chaos-knight":"chaos knight",
+    "crystal-maiden":"crystal maiden","dark-seer":"dark seer","dark-willow":"dark willow",
+    "death-prophet":"death prophet","dragon-knight":"dragon knight","drow-ranger":"drow ranger",
+    "earth-spirit":"earth spirit","elder-titan":"elder titan","ember-spirit":"ember spirit",
+    "faceless-void":"faceless void","keeper-of-the-light":"keeper of the light",
+    "legion-commander":"legion commander","life-stealer":"lifestealer","lone-druid":"lone druid",
+    "monkey-king":"monkey king","naga-siren":"naga siren","natures-prophet":"nature's prophet",
+    "nature's-prophet":"nature's prophet","night-stalker":"night stalker","nyx-assassin":"nyx assassin",
+    "ogre-magi":"ogre magi","outworld-destroyer":"outworld destroyer","phantom-assassin":"phantom assassin",
+    "phantom-lancer":"phantom lancer","primal-beast":"primal beast","queen-of-pain":"queen of pain",
+    "sand-king":"sand king","shadow-demon":"shadow demon","shadow-fiend":"shadow fiend",
+    "shadow-shaman":"shadow shaman","skywrath-mage":"skywrath mage","spirit-breaker":"spirit breaker",
+    "storm-spirit":"storm spirit","templar-assassin":"templar assassin","treant-protector":"treant protector",
+    "troll-warlord":"troll warlord","vengeful-spirit":"vengeful spirit","void-spirit":"void spirit",
+    "winter-wyvern":"winter wyvern","witch-doctor":"witch doctor","wraith-king":"wraith king"
+  };
+  const c=normalizeName(raw);
+  return ov[c]||c.replace(/-/g,' ');
+}
+
+/* ════════════════════════════════════════════════════════════
+   DATA LOADING — fetch-based, completely silent on failure
+════════════════════════════════════════════════════════════ */
+async function loadRuntimeData(){
+  try{
+    const h=await fetch('heroes.json').then(r=>r.json());
+    for(const[id,hero]of Object.entries(h)){
+      const k=normalizeName(hero.name);
+      runtime.heroNameToId[k]=Number(id);
+      runtime.heroIdToName[Number(id)]=k;
+      runtime.heroNameToTag[k]=hero.tag;
+    }
+    runtime.loaded.heroes=true;
+    // Build alias lookup: alias → hero name key
+    for(const[id,hero]of Object.entries(h)){
+      const nameKey=normalizeName(hero.name);
+      const addAlias=a=>{ if(a) runtime.heroAliases[a.toLowerCase().trim()]=nameKey; };
+      // alt name (e.g. "Furion", "N'aix")
+      addAlias(hero.alt);
+      // tag itself (e.g. "antimage")
+      addAlias(hero.tag);
+      // comma-separated aliases field
+      if(hero.aliases){ hero.aliases.split(',').forEach(a=>addAlias(a.trim())); }
+    }
+  }catch(_){}
+
+  try{
+    const sdc=await fetch('sdc_values.json').then(r=>r.json());
+    const mapped={};
+    for(const [name,vals] of Object.entries(sdc)){
+      const key=normalizeName(name);
+      mapped[key]={s:Number(vals[0]||0),d:Number(vals[1]||0),c:Number(vals[2]||0)};
+    }
+    if(Object.keys(mapped).length) HEROES=mapped;
+  }catch(_){}
+
+  try{
+    const c=await fetch('hero_counters.json').then(r=>r.json());
+    const m={};
+    for(const[h,list]of Object.entries(c)) m[normalizeCounterKey(h)]=(list||[]).map(normalizeCounterKey);
+    runtime.simpleCounters=m;
+    runtime.loaded.counters=true;
+  }catch(_){}
+
+  try{
+    const s=await fetch('stats.spectral.gg.json').then(r=>r.json());
+    ingestSpectral(s);
+    runtime.loaded.spectral=Object.keys(runtime.spectralByHeroId).length>0;
+  }catch(_){}
+
+  const spectralStatus = document.getElementById('spectral-status');
+  if (spectralStatus) {
+    spectralStatus.textContent = `Spectral.stats ${runtime.loaded.spectral ? 'online' : 'offline'}`;
+    spectralStatus.style.color = runtime.loaded.spectral ? 'var(--green)' : 'var(--muted)';
+  }
+  renderAll();
+}
+
+function ingestSpectral(payload){
+  if(!payload)return;
+  const add=obj=>{
+    if(!obj?.result?.reference?.id||!obj?.result?.opponents)return;
+    runtime.spectralByHeroId[Number(obj.result.reference.id)]=obj.result.opponents;
+  };
+  if(Array.isArray(payload)) payload.forEach(add);
+  else if(payload.result?.reference?.id) add(payload);
+  else Object.values(payload).forEach(add);
+}
+
+/* ════════════════════════════════════════════════════════════
+   CORE LOGIC
+════════════════════════════════════════════════════════════ */
+function teamTotals(team){
+  return state[team].reduce((a,h)=>{
+    const r=HEROES[h]||{s:0,d:0,c:0};
+    return{s:a.s+r.s,d:a.d+r.d,c:a.c+r.c};
+  },{s:0,d:0,c:0});
+}
+function teamHasStrongSave(team){ return state[team].some(h=>(HEROES[h]?.s||0)===3); }
+function enemyHasStrongCatch(team){
+  const ft=teamTotals(enemy(team));
+  return state[enemy(team)].some(h=>(HEROES[h]?.c||0)===3)||(ft.c>ft.s&&ft.c>=ft.d);
+}
+
+/* ── SDC ────────────────────────────────────────────────── */
+function scoreSdc(team){
+  const t=teamTotals(team);
+  const ft=teamTotals(enemy(team));
+  const used=new Set([...state.radiant,...state.dire]);
+  const hasSave=teamHasStrongSave(team);
+  const foeCatch=enemyHasStrongCatch(team);
+
+  const tS=MAX*1.0, tD=MAX*1.1, tC=MAX*0.9;
+  const ratio={
+    s: t.s/(tS||1),
+    d: t.d/(tD||1),
+    c: t.c/(tC||1)
+  };
+
+  let wS=Math.max(0,tS-t.s);
+  let wD=Math.max(0,tD-t.d);
+  let wC=Math.max(0,tC-t.c);
+
+  if(hasSave) wS=0;
+  else if(foeCatch) wS=wS*1.9 + 0.35;
+  else wS*=0.35;
+
+  const active=[
+    ...(!hasSave ? [{key:'s', val:ratio.s}] : []),
+    {key:'d', val:ratio.d},
+    {key:'c', val:ratio.c}
+  ].sort((a,b)=>a.val-b.val);
+
+  const primary=active[0]?.key || 'd';
+  const secondary=active[1]?.key || primary;
+  const spread=(active[1]?.val ?? active[0]?.val ?? 1) - (active[0]?.val ?? 1);
+  const dominant=Math.max(ratio.d, ratio.c, hasSave ? -999 : ratio.s);
+  const priorityMode = spread > 0.22 || (active[0]?.val ?? 1) < 0.92 || dominant - (active[0]?.val ?? dominant) > 0.55;
+
+  const focusBoost={s:0,d:0,c:0};
+  if(priorityMode){
+    if(primary==='c'){
+      focusBoost.c = 1.7 + spread*2.2;
+      wC += focusBoost.c;
+      wD *= 0.82;
+      if(hasSave) wS = 0;
+    }else if(primary==='d'){
+      focusBoost.d = 1.55 + spread*2.0;
+      wD += focusBoost.d;
+      wC *= 0.86;
+    }else if(primary==='s'){
+      focusBoost.s = (foeCatch ? 2.1 : 1.35) + spread*1.8;
+      wS += focusBoost.s;
+      wD *= 0.92;
+      wC *= 0.92;
+    }
+  }
+
+  if(ft.d>ft.c && ft.d>ft.s) wD += 0.2;
+  if(ft.c>ft.d && ft.c>ft.s) wC += 0.2;
+
+  const hardGapSum = wS + wD + wC;
+  let softS = 0, softD = 0, softC = 0;
+  if (hardGapSum < 0.01) {
+    const avgRatio = (ratio.s + ratio.d + ratio.c) / 3;
+    softS = hasSave ? 0.05 : Math.max(0.12, avgRatio - ratio.s + (foeCatch ? 0.45 : 0.08));
+    softD = Math.max(0.12, avgRatio - ratio.d);
+    softC = Math.max(0.12, avgRatio - ratio.c);
+  }
+
+  return Object.entries(HEROES).filter(([n])=>!used.has(n)).map(([name,r])=>{
+    const ws = hardGapSum > 0 ? wS : softS;
+    const wd = hardGapSum > 0 ? wD : softD;
+    const wc = hardGapSum > 0 ? wC : softC;
+
+    let raw = (r.s * ws) + (r.d * wd) + (r.c * wc);
+
+    const coversS = ws > 0.01 && r.s > 0;
+    const coversD = wd > 0.01 && r.d > 0;
+    const coversC = wc > 0.01 && r.c > 0;
+    const cats = [coversS, coversD, coversC].filter(Boolean).length;
+
+    let bonus = cats >= 3 ? 0.9 : cats === 2 ? 0.45 : 0;
+
+    if(primary==='c'){
+      if(r.c===3) bonus += 4.2;
+      else if(r.c===2) bonus += 1.5;
+      if(r.d===3 && r.c===3) bonus += 1.55;
+      if(r.c>=3 && r.d>=2) bonus += 0.7;
+    }else if(primary==='d'){
+      if(r.d===3) bonus += 4.0;
+      else if(r.d===2) bonus += 1.35;
+      if(r.d===3 && r.c>=2) bonus += 0.9;
+    }else if(primary==='s' && !hasSave){
+      if(r.s===3) bonus += foeCatch ? 4.5 : 3.1;
+      else if(r.s===2) bonus += foeCatch ? 1.8 : 1.0;
+      if(r.s>=2 && r.c>=2) bonus += 0.6;
+    }
+
+    if(wd > 0.25 && wc > 0.25 && r.d >= 2 && r.c >= 2) bonus += 0.9;
+    if(ws > 0.25 && wc > 0.25 && r.s >= 2 && r.c >= 2) bonus += 0.5;
+
+    let pen = 0;
+    if (hasSave) pen += r.s * 0.7;
+    if (primary==='c' && ratio.d > ratio.c + 0.25) pen += r.d * 0.55;
+    if (primary==='d' && ratio.c > ratio.d + 0.25) pen += r.c * 0.45;
+    if (primary==='s' && ratio.d > ratio.s + 0.35) pen += r.d * 0.12;
+
+    if (t.d >= tD*1.15) pen += r.d * 0.22;
+    if (t.c >= tC*1.15) pen += r.c * 0.18;
+    if (!hasSave && t.s >= tS*1.15) pen += r.s * 0.25;
+
+    const score = raw + bonus - pen;
+
+    const fx=[];
+    if(primary==='s' && r.s>=2 && !hasSave) fx.push('Save');
+    if(primary==='d' && r.d>=2) fx.push('Damage');
+    if(primary==='c' && r.c>=2) fx.push('Catch');
+    if(!fx.length){
+      if(ws > 0.35 && r.s>=2 && !hasSave) fx.push('Save');
+      if(wd > 0.35 && r.d>=2) fx.push('Damage');
+      if(wc > 0.35 && r.c>=2) fx.push('Catch');
+    }
+
+    let reason='Balanced Option';
+    if(fx.length>=2) reason=fx.join(' + ')+' Fix';
+    else if(fx.length===1) reason=fx[0]==='Save'&&foeCatch?'Strong Save Fix':`${fx[0]} Fix`;
+    else if(primary==='c' && r.c>=3) reason='Hard Catch Fix';
+    else if(primary==='d' && r.d>=3) reason='Hard Damage Fix';
+    else if(r.d>=3 && r.c>=3) reason='Damage + Catch Option';
+    else if(r.c>=Math.max(r.s,r.d)) reason='Catch Option';
+    else if(r.d>=Math.max(r.s,r.c)) reason='Damage Option';
+
+    return{name,r,sdcScore:score,sdcReason:reason};
+  }).sort((a,b)=>b.sdcScore-a.sdcScore||(b.r.c+b.r.d+b.r.s)-(a.r.c+a.r.d+a.r.s)||(primary==='c'?(b.r.c-a.r.c):(primary==='d'?(b.r.d-a.r.d):(b.r.s-a.r.s)))||b.r.c-a.r.c);
+}
+
+/* ── Counter ────────────────────────────────────────────── */
+function evalMatchup(cand,foe){
+  const cId=runtime.heroNameToId[normalizeName(cand)];
+  const fId=runtime.heroNameToId[normalizeName(foe)];
+  if(cId&&fId&&runtime.spectralByHeroId[cId]?.[fId])
+    return{score:(Number(runtime.spectralByHeroId[cId][fId].diff)||0)*100,label:'spectral-forward'};
+  if(cId&&fId&&runtime.spectralByHeroId[fId]?.[cId])
+    return{score:-(Number(runtime.spectralByHeroId[fId][cId].diff)||0)*100,label:'spectral-reverse'};
+  const ec=runtime.simpleCounters[normalizeName(foe)]||[];
+  const cc=runtime.simpleCounters[normalizeName(cand)]||[];
+  let s=0;
+  const ip=ec.indexOf(normalizeName(cand)); if(ip>=0) s+=(5-ip)*3;
+  const in_=cc.indexOf(normalizeName(foe)); if(in_>=0) s-=(5-in_)*3.2;
+  return{score:s,label:'simple'};
+}
+function scoreCounters(team){
+  const foe=enemy(team);
+  const ep=state[foe];
+  const used=new Set([...state.radiant,...state.dire]);
+  if(!ep.length)return[];
+  return Object.entries(HEROES).filter(([n])=>!used.has(n)).map(([name,r])=>{
+    let tot=0,neg=[],sp=0;
+    for(const e of ep){
+      const m=evalMatchup(name,e);
+      tot+=m.score;
+      if(m.label.startsWith('spectral')) sp++;
+      if(m.score<-0.5) neg.push(e);
+    }
+    const relevant = getRelevantCounterTargets(name, ep);
+    const hitCount = relevant.targets.length;
+    let reason='General matchup value';
+    if(hitCount>=2) reason=`Good into ${hitCount} enemy heroes`;
+    else if(hitCount===1) reason=`Good into ${relevant.targets[0]}`;
+    return{name,r,counterScore:tot,appearances:hitCount,badMatchups:neg.length,spectralHits:sp,counterReason:reason,counterTargets:relevant.displayTargets};
+  }).sort((a,b)=>b.counterScore-a.counterScore||b.appearances-a.appearances||a.badMatchups-b.badMatchups);
+}
+
+
+function getSimpleCounterTargets(candidateName, enemyPicks){
+  const out=[];
+  for(const enemyName of enemyPicks){
+    const enemyCounters = runtime.simpleCounters[normalizeName(enemyName)] || [];
+    const idx = enemyCounters.indexOf(normalizeName(candidateName));
+    if(idx >= 0){
+      out.push({hero: enemyName, score: (5 - idx) * 3, source:'simple'});
+    }
+  }
+  return out.sort((a,b)=>b.score-a.score);
+}
+function getSpectralCounterTargets(candidateName, enemyPicks){
+  const candId = runtime.heroNameToId[normalizeName(candidateName)];
+  if(!candId || !runtime.spectralByHeroId[candId]) return [];
+  const opponents = runtime.spectralByHeroId[candId];
+  const ranked = Object.entries(opponents)
+    .map(([id, data]) => ({ id:Number(id), diff:Number(data?.diff || 0) }))
+    .filter(x => x.diff > 0)
+    .sort((a,b)=>b.diff-a.diff)
+    .slice(0,10);
+  const topSet = new Set(ranked.map(x=>x.id));
+  const hits = [];
+  for(const enemyName of enemyPicks){
+    const enemyId = runtime.heroNameToId[normalizeName(enemyName)];
+    if(enemyId && topSet.has(enemyId) && opponents[enemyId]){
+      hits.push({hero: enemyName, score: Number(opponents[enemyId].diff || 0) * 100, source:'spectral'});
+    }
+  }
+  if(!hits.length){
+    for(const enemyName of enemyPicks){
+      const enemyId = runtime.heroNameToId[normalizeName(enemyName)];
+      if(enemyId && opponents[enemyId] && Number(opponents[enemyId].diff || 0) > 0){
+        hits.push({hero: enemyName, score: Number(opponents[enemyId].diff || 0) * 100, source:'spectral'});
+      }
+    }
+  }
+  return hits.sort((a,b)=>b.score-a.score);
+}
+function getRelevantCounterTargets(candidateName, enemyPicks){
+  const spectralHits = getSpectralCounterTargets(candidateName, enemyPicks);
+  if(spectralHits.length){
+    const all = spectralHits.map(x=>x.hero);
+    return {
+      targets: all,
+      // displayTargets: full list — enemyBadgesMarkup decides whether to show icons or whole-draft badge
+      displayTargets: all,
+      source: 'spectral'
+    };
+  }
+  const simpleHits = getSimpleCounterTargets(candidateName, enemyPicks);
+  if(simpleHits.length){
+    const all = simpleHits.map(x=>x.hero);
+    return {
+      targets: all,
+      displayTargets: all,
+      source: 'simple'
+    };
+  }
+  return { targets:[], displayTargets:[], source:'' };
+}
+function enemyBadgesMarkup(targets, totalEnemyCount){
+  if(!targets || !targets.length) return '';
+  // If the hero is good into the whole current enemy draft, show gold badge instead
+  if(totalEnemyCount >= 2 && targets.length >= totalEnemyCount){
+    return `<span class="whole-draft-badge"><span class="whole-draft-star">★</span>Whole Draft</span>`;
+  }
+  return `<div class="enemy-badges">${targets.map(miniEnemyBadge).join('')}</div>`;
+}
+
+/* ── Hybrid ─────────────────────────────────────────────── */
+function scoreHybrid(sdcList,ctrList){
+  const VISIBLE_SDC = 30;
+  const VISIBLE_COUNTER = 10;
+  const ts=sdcList.slice(0, VISIBLE_SDC),tc=ctrList.slice(0, VISIBLE_COUNTER);
+  const sr=Object.fromEntries(ts.map((h,i)=>[h.name,i]));
+  const cr=Object.fromEntries(tc.map((h,i)=>[h.name,i]));
+  return ts.filter(h=>cr[h.name]!==undefined).map(h=>{
+    const c=tc[cr[h.name]];
+    return{
+      name:h.name,r:h.r,
+      hybridScore:(1-sr[h.name]/VISIBLE_SDC)*0.9+(1-cr[h.name]/VISIBLE_COUNTER)*1.1+Math.max(0,c.counterScore)/60,
+      sdcReason:h.sdcReason,counterReason:c.counterReason,counterTargets:c.counterTargets||[],spectralHits:c.spectralHits
+    };
+  }).sort((a,b)=>b.hybridScore-a.hybridScore);
+}
+
+/* ── Alerts ─────────────────────────────────────────────── */
+function generateAlerts(team){
+  const t=teamTotals(team), p=state[team].length;
+  if(!p) return [{type:'info', msg:'Add heroes to see draft analysis.'}];
+
+  const target={ s:p*1.0, d:p*1.1, c:p*0.9 };
+  const ratio={
+    save:   t.s/(target.s||1),
+    damage: t.d/(target.d||1),
+    catch:  t.c/(target.c||1)
+  };
+  const fc = enemyHasStrongCatch(team);
+  const hs = teamHasStrongSave(team);
+  const alerts=[];
+
+  const deficits = [
+    {key:'save',   val:ratio.save,   covered:hs, type: fc && !hs ? 'danger' : 'warn'},
+    {key:'damage', val:ratio.damage, covered:false, type:'danger'},
+    {key:'catch',  val:ratio.catch,  covered:false, type:'warn'}
+  ]
+  .filter(x => !x.covered)
+  .sort((a,b) => a.val - b.val);
+
+  const worst = deficits[0];
+  if (worst && worst.val < 0.82) {
+    if (worst.key === 'save') {
+      alerts.push({
+        type: fc ? 'danger' : 'warn',
+        msg: fc
+          ? 'SAVE is the main issue here — enemy catch can punish this draft.'
+          : 'SAVE is the weakest area right now.'
+      });
+    } else if (worst.key === 'damage') {
+      alerts.push({ type:'danger', msg:'DAMAGE is the weakest area right now.' });
+    } else if (worst.key === 'catch') {
+      alerts.push({ type:'warn', msg:'CATCH is the weakest area right now.' });
+    }
+  }
+
+  const sorted = Object.entries(ratio).sort((a,b)=>b[1]-a[1]);
+  const [topKey, topVal] = sorted[0];
+  const [, secondVal] = sorted[1];
+  const [bottomKey, bottomVal] = sorted[2];
+
+  if (topVal - bottomVal > 0.42) {
+    if (topKey === 'damage') {
+      alerts.push({ type:'warn', msg:`Damage-heavy draft — next pick should stabilise ${bottomKey}.` });
+    } else if (topKey === 'catch') {
+      alerts.push({ type:'warn', msg:`Catch-heavy draft — next pick should stabilise ${bottomKey}.` });
+    } else if (topKey === 'save' && !hs) {
+      alerts.push({ type:'warn', msg:`Save-heavy draft — next pick should stabilise ${bottomKey}.` });
+    }
+  }
+
+  if (!alerts.length) {
+    if (hs && fc) {
+      alerts.push({ type:'ok', msg:'Strong SAVE already covers the enemy catch threat.' });
+    } else if (hs) {
+      alerts.push({ type:'info', msg:'Strong SAVE covered — lean toward damage or catch next.' });
+    } else if (fc && ratio.save < 1.0) {
+      alerts.push({ type:'info', msg:'Enemy catch is strong, so save has extra value this game.' });
+    } else if (Math.abs(topVal - bottomVal) < 0.22 && secondVal > 0.9) {
+      alerts.push({ type:'ok', msg:'Draft looks fairly balanced across save, damage, and catch.' });
+    } else {
+      alerts.push({ type:'info', msg:'Draft is playable, but one more pick should smooth the spread.' });
+    }
+  } else if (alerts.length === 1) {
+    if (hs && fc) {
+      alerts.push({ type:'ok', msg:'Strong SAVE already covers the enemy catch threat.' });
+    } else if (hs && bottomKey !== 'save') {
+      alerts.push({ type:'info', msg:`Strong SAVE covered — next pick can stabilise ${bottomKey}.` });
+    } else if (fc && !hs && ratio.save < 0.95) {
+      alerts.push({ type:'info', msg:'Enemy catch is strong, so save has extra value this game.' });
+    } else if (topVal - bottomVal > 0.42) {
+      alerts.push({ type:'info', msg:`Best improvement now is balancing ${bottomKey}.` });
+    }
+  }
+
+  return alerts.slice(0,2);
+}
+
+/* ════════════════════════════════════════════════════════════
+   STATE MUTATIONS
+════════════════════════════════════════════════════════════ */
+function setTarget(t){
+  state.target=t;
+  document.getElementById('btn-radiant').className='team-btn'+(t==='radiant'?' active-r':'');
+  document.getElementById('btn-dire').className='team-btn'+(t==='dire'?' active-d':'');
+}
+function setSuggTarget(t){
+  state.suggTarget=t;
+  document.getElementById('sugg-btn-radiant').className='team-btn'+(t==='radiant'?' active-r':'');
+  document.getElementById('sugg-btn-dire').className='team-btn'+(t==='dire'?' active-d':'');
+  renderSuggestions();
+}
+function addHero(name){
+  const t=state.target;
+  if(state[t].length>=MAX||state.radiant.includes(name)||state.dire.includes(name))return;
+  state[t].push(name); renderAll();
+}
+function addHeroToTeam(name,team){
+  if(state[team].length>=MAX||state.radiant.includes(name)||state.dire.includes(name))return;
+  state[team].push(name); renderAll();
+}
+function removeHero(team,name){ state[team]=state[team].filter(h=>h!==name); renderAll(); }
+function resetDraft(){
+  state.radiant=[];
+  state.dire=[];
+  document.getElementById('hero-search').value='';
+  renderAll();
+}
+
+/* ════════════════════════════════════════════════════════════
+   RENDER
+════════════════════════════════════════════════════════════ */
+function renderSlots(team){
+  const el=document.getElementById('slots-'+team); el.innerHTML='';
+  for(let i=0;i<MAX;i++){
+    const div=document.createElement('div');
+    const name=state[team][i];
+    div.className='slot'+(name?' filled':'');
+    if(name){
+      const r=HEROES[name]||{s:0,d:0,c:0};
+      div.innerHTML=`${imgTagMarkup(name)}
+        <div class="slot-name">${name}</div>
+        <div class="slot-tags">
+          <span class="tag tag-s">S${r.s}</span><span class="tag tag-d">D${r.d}</span><span class="tag tag-c">C${r.c}</span>
+        </div>
+        <div class="remove-btn" onclick="removeHero('${team}','${name}')">✕</div>`;
+    }else{
+      div.innerHTML=`<span class="slot-empty-icon">+</span>`;
+      div.onclick=()=>setTarget(team);
+    }
+    el.appendChild(div);
+  }
+}
+function renderBars(team){
+  const t=teamTotals(team),m=MAX*3;
+  document.getElementById('bars-'+team).innerHTML=[
+    {key:'s',label:'Save',cls:'bar-s'},{key:'d',label:'Damage',cls:'bar-d'},{key:'c',label:'Catch',cls:'bar-c'}
+  ].map(({key,label,cls})=>`<div class="bar-row ${cls}">
+    <span class="bar-label">${label}</span>
+    <div class="bar-track"><div class="bar-fill" style="width:${Math.round(t[key]/m*100)}%"></div></div>
+    <span class="bar-val">${t[key]}</span>
+  </div>`).join('');
+}
+function renderAlerts(){
+  ['radiant','dire'].forEach(t=>{
+    document.getElementById('alerts-'+t).innerHTML=
+      generateAlerts(t).map(a=>`<span class="alert alert-${a.type}">${a.msg}</span>`).join('');
+  });
+}
+function heroMatchesQuery(heroName, q){
+  if(!q) return true;
+  if(heroName.includes(q)) return true;
+  // Check if query matches any alias that resolves to this hero
+  const aliasTarget = runtime.heroAliases[q];
+  if(aliasTarget && aliasTarget === heroName) return true;
+  // Also allow prefix matching on aliases (e.g. "ko" matches "kotl")
+  for(const [alias, target] of Object.entries(runtime.heroAliases)){
+    if(target === heroName && alias.startsWith(q) && q.length >= 2) return true;
+  }
+  return false;
+}
+function renderPool(){
+  const q=normalizeName(document.getElementById('hero-search').value||'');
+  const used=new Set([...state.radiant,...state.dire]);
+  const el=document.getElementById('hero-grid'); el.innerHTML='';
+  Object.entries(HEROES).filter(([n])=>heroMatchesQuery(n,q)).forEach(([name,r])=>{
+    const div=document.createElement('div');
+    div.className='hero-thumb'+(used.has(name)?' used':'');
+    div.innerHTML=`${imgTagMarkup(name)}
+      <div class="hero-thumb-name">${name}</div>
+      <div class="hero-thumb-tags">
+        <span class="mini-tag tag-s">S${r.s}</span>
+        <span class="mini-tag tag-d">D${r.d}</span>
+        <span class="mini-tag tag-c">C${r.c}</span>
+      </div>`;
+    div.onclick=()=>addHero(name);
+    el.appendChild(div);
+  });
+}
+
+function suggItemHtml({name,r,rank,reason,badgeHtml,cssClass,team,enemyTargets=[],totalEnemyCount=0}){
+  const rc=rkCls(rank);
+  const top=rank===1?' rank-top':'';
+  return `<div class="sugg-item ${cssClass}${top}" onclick="addHeroToTeam('${name}','${team}')">
+    <div class="sugg-rank ${rc}">${rank}</div>
+    ${imgTagMarkup(name,'sugg-img')}
+    <div class="sugg-info">
+      <div class="sugg-name">${name}</div>
+      <div class="sugg-reason">${reason}</div>
+      <div class="sugg-scores">
+        <span class="tag tag-s">S${r.s}</span><span class="tag tag-d">D${r.d}</span><span class="tag tag-c">C${r.c}</span>
+      </div>
+    </div>
+    <div class="badge-wrap">${enemyBadgesMarkup(enemyTargets, totalEnemyCount)}${badgeHtml||''}</div>
+  </div>`;
+}
+
+function renderSuggestions(){
+  const team=state.suggTarget,foe=enemy(team),slots=MAX-state[team].length;
+  const foeCount=state[foe].length;
+  const sdcEl=document.getElementById('suggestions-sdc');
+  const ctrEl=document.getElementById('suggestions-counter');
+  const hybEl=document.getElementById('suggestions-hybrid');
+  document.getElementById('counter-subtitle').textContent=`vs ${cap(foe)}`;
+
+  if(!slots){
+    const msg=`<div class="no-sugg">Draft is full for this team.</div>`;
+    sdcEl.innerHTML=ctrEl.innerHTML=hybEl.innerHTML=msg; return;
+  }
+
+  const sdcList=scoreSdc(team);
+  const ctrList=scoreCounters(team);
+  const hybList=scoreHybrid(sdcList,ctrList);
+
+  sdcEl.innerHTML=sdcList.slice(0,30).map((c,i)=>suggItemHtml({
+    name:c.name,r:c.r,rank:i+1,reason:c.sdcReason,badgeHtml:'',cssClass:'sdc-item',team,enemyTargets:[]
+  })).join('')||`<div class="no-sugg">No heroes available.</div>`;
+
+  if(!state[foe].length){
+    ctrEl.innerHTML=`<div class="no-sugg">Pick enemy heroes to see counter suggestions.</div>`;
+  }else{
+    ctrEl.innerHTML=ctrList.slice(0,10).map((c,i)=>suggItemHtml({
+      name:c.name,r:c.r,rank:i+1,
+      reason: c.counterTargets && c.counterTargets.length>=foeCount && foeCount>=2
+        ? 'Counters the whole draft'
+        : c.counterReason,
+      badgeHtml:c.appearances>=2?`<span class="counter-count">×${c.appearances}</span>`:'',
+      cssClass:'counter-item',team,enemyTargets:c.counterTargets||[],totalEnemyCount:foeCount
+    })).join('')||`<div class="no-sugg">No matchup data for current picks.</div>`;
+  }
+
+  if(!state[foe].length){
+    hybEl.innerHTML=`<div class="no-sugg">Pick enemy heroes to see hybrid suggestions.</div>`;
+  }else if(!hybList.length){
+    hybEl.innerHTML=`<div class="no-sugg">No strong SDC + matchup overlap yet.</div>`;
+  }else{
+    hybEl.innerHTML=hybList.slice(0,10).map((c,i)=>{
+      const isWholeDraft = c.counterTargets && c.counterTargets.length>=foeCount && foeCount>=2;
+      const counterPart = isWholeDraft ? 'Counters whole draft' : c.counterReason;
+      return suggItemHtml({
+        name:c.name,r:c.r,rank:i+1,reason:`${c.sdcReason} · ${counterPart}`,
+        badgeHtml:`<span class="hybrid-badge">Hybrid</span>`,
+        cssClass:'hybrid-item',team,enemyTargets:c.counterTargets||[],totalEnemyCount:foeCount
+      });
+    }).join('');
+  }
+}
+
+function renderAll(){
+  ['radiant','dire'].forEach(t=>{renderSlots(t);renderBars(t);});
+  renderAlerts(); renderPool(); renderSuggestions();
+}
+
+renderAll();
+loadRuntimeData();
+</script>
+</body>
+</html>
