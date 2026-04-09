@@ -255,6 +255,25 @@ body {
   color:var(--muted);font-size:10px;font-weight:700;text-align:center;padding:4px
 }
 
+
+/* ── Role tags / filters ────────────────────────────────── */
+.role-filter-btn{
+  font-size:10px;padding:4px 10px;border-radius:7px;border:1px solid var(--border-hi);
+  background:var(--surface-2);color:var(--muted);cursor:pointer;font-weight:700;transition:all .15s
+}
+.role-filter-btn.active{border-color:var(--blue);color:#bfe1ff;background:#0d1c2a}
+.role-pill{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:16px;height:16px;padding:0 4px;border-radius:999px;
+  font-size:8px;font-weight:700;letter-spacing:.02em;flex-shrink:0;
+  opacity:.82
+}
+.role-c{background:rgba(255,179,133,.08);color:#c99574;border:1px solid rgba(109,52,32,.45)}
+.role-s{background:rgba(155,209,255,.08);color:#85b9de;border:1px solid rgba(40,88,128,.45)}
+.role-f{background:rgba(152,230,170,.08);color:#88c596;border:1px solid rgba(47,106,62,.45)}
+.hero-thumb-role{position:absolute;left:2px;top:2px;z-index:2}
+.sugg-meta{display:flex;align-items:center;gap:6px;margin-top:1px}
+
 /* ── Responsive ──────────────────────────────────────────── */
 @media(max-width:1100px){.bottom-grid{grid-template-columns:1fr}}
 @media(max-width:860px){.teams{grid-template-columns:1fr}.suggestions-grid{grid-template-columns:1fr}}
@@ -325,6 +344,12 @@ body {
       <div class="team-btns">
         <button class="team-btn active-r" id="sugg-btn-radiant" onclick="setSuggTarget('radiant')">Radiant</button>
         <button class="team-btn"          id="sugg-btn-dire"    onclick="setSuggTarget('dire')"   >Dire</button>
+      </div>
+      <div class="team-btns" style="margin-top:-4px;margin-bottom:8px">
+        <button class="role-filter-btn active" id="role-filter-all" onclick="setRoleFilter('all')">All</button>
+        <button class="role-filter-btn" id="role-filter-c" onclick="setRoleFilter('C')">Core</button>
+        <button class="role-filter-btn" id="role-filter-s" onclick="setRoleFilter('S')">Support</button>
+        <button class="role-filter-btn" id="role-filter-f" onclick="setRoleFilter('F')">Flex</button>
       </div>
       <div id="spectral-status" style="font-size:10px;color:var(--muted);margin:-2px 0 10px 1px;">Spectral.stats offline</div>
 
@@ -505,8 +530,10 @@ let HEROES = {
 /* ════════════════════════════════════════════════════════════
    APP STATE
 ════════════════════════════════════════════════════════════ */
-const state = { radiant:[], dire:[], target:'radiant', suggTarget:'radiant' };
+const state = { radiant:[], dire:[], target:'radiant', suggTarget:'radiant', roleFilter:'all' };
 const MAX   = 5;
+
+const ROLE_TAGS = {"abaddon": "F", "alchemist": "F", "ancient apparition": "S", "anti-mage": "C", "arc warden": "C", "axe": "C", "bane": "S", "batrider": "F", "beastmaster": "C", "bloodseeker": "C", "bounty hunter": "S", "brewmaster": "C", "bristleback": "C", "broodmother": "C", "centaur warrunner": "F", "chaos knight": "C", "chen": "S", "clinkz": "C", "clockwerk": "S", "crystal maiden": "S", "dark seer": "C", "dark willow": "S", "dawnbreaker": "F", "dazzle": "S", "death prophet": "F", "disruptor": "S", "doom": "C", "dragon knight": "C", "drow ranger": "C", "earth spirit": "F", "earthshaker": "F", "elder titan": "S", "ember spirit": "C", "enchantress": "S", "enigma": "F", "faceless void": "C", "grimstroke": "S", "gyrocopter": "C", "hoodwink": "F", "huskar": "C", "invoker": "C", "io": "F", "jakiro": "F", "juggernaut": "C", "keeper of the light": "F", "kez": "C", "kunkka": "C", "largo": "F", "legion commander": "C", "leshrac": "C", "lich": "S", "lifestealer": "C", "lina": "C", "lion": "F", "lone druid": "C", "luna": "C", "lycan": "C", "magnus": "F", "marci": "F", "mars": "C", "medusa": "C", "meepo": "C", "mirana": "F", "monkey king": "F", "morphling": "C", "muerta": "F", "naga siren": "C", "nature's prophet": "F", "necrophos": "C", "night stalker": "C", "nyx assassin": "S", "ogre magi": "S", "omniknight": "F", "oracle": "S", "outworld destroyer": "C", "pangolier": "C", "phantom assassin": "C", "phantom lancer": "C", "phoenix": "F", "primal beast": "C", "puck": "C", "pudge": "F", "pugna": "F", "queen of pain": "F", "razor": "C", "riki": "C", "ringmaster": "F", "rubick": "F", "sand king": "C", "shadow demon": "S", "shadow fiend": "C", "shadow shaman": "S", "silencer": "S", "skywrath mage": "S", "slardar": "C", "slark": "C", "snapfire": "S", "sniper": "F", "spectre": "C", "spirit breaker": "S", "storm spirit": "C", "sven": "F", "techies": "S", "templar assassin": "C", "terrorblade": "C", "tidehunter": "C", "timbersaw": "C", "tinker": "C", "tiny": "F", "treant protector": "S", "troll warlord": "C", "tusk": "F", "underlord": "C", "undying": "F", "ursa": "C", "vengeful spirit": "F", "venomancer": "F", "viper": "F", "visage": "F", "void spirit": "F", "warlock": "S", "weaver": "F", "windranger": "F", "winter wyvern": "F", "witch doctor": "S", "wraith king": "C", "zeus": "F"};
 
 const runtime = {
   simpleCounters:{}, spectralByHeroId:{},
@@ -527,6 +554,60 @@ function enemy(t){ return t==='radiant'?'dire':'radiant'; }
 function rkCls(rank){
   const r = Math.min(rank, 10);
   return `rk-${r}`;
+}
+
+
+function getRoleTag(heroName){
+  return ROLE_TAGS[normalizeName(heroName)] || 'F';
+}
+function roleLabel(tag){
+  return tag === 'C' ? 'Core' : tag === 'S' ? 'Support' : 'Flex';
+}
+function rolePillMarkup(heroName, extraCls=''){
+  const tag = getRoleTag(heroName);
+  return `<span class="role-pill role-${tag.toLowerCase()} ${extraCls}" title="${roleLabel(tag)}">${tag}</span>`;
+}
+function matchesRoleFilter(heroName){
+  const role = getRoleTag(heroName);
+
+  if (state.roleFilter === 'all') return true;
+  if (state.roleFilter === 'F') return role === 'F';
+
+  // Flex heroes should appear in both Core and Support filtered views
+  if (state.roleFilter === 'C') return role === 'C' || role === 'F';
+  if (state.roleFilter === 'S') return role === 'S' || role === 'F';
+
+  return true;
+}
+function setRoleFilter(tag){
+  state.roleFilter = tag;
+  document.getElementById('role-filter-all').classList.toggle('active', tag === 'all');
+  document.getElementById('role-filter-c').classList.toggle('active', tag === 'C');
+  document.getElementById('role-filter-s').classList.toggle('active', tag === 'S');
+  document.getElementById('role-filter-f').classList.toggle('active', tag === 'F');
+  renderSuggestions();
+}
+function diversifyVisibleSdc(list, limit=30){
+  const pool = list.slice(0, Math.max(limit + 18, 40));
+  const picked = [];
+  const roleCounts = {C:0,S:0,F:0};
+  while (pool.length && picked.length < limit){
+    let bestIdx = 0;
+    let bestAdj = -Infinity;
+    for (let i = 0; i < pool.length; i++){
+      const role = getRoleTag(pool[i].name);
+      const penalty = roleCounts[role] * 0.55;
+      const adj = pool[i].sdcScore - penalty;
+      if (adj > bestAdj){
+        bestAdj = adj;
+        bestIdx = i;
+      }
+    }
+    const chosen = pool.splice(bestIdx, 1)[0];
+    picked.push(chosen);
+    roleCounts[getRoleTag(chosen.name)] += 1;
+  }
+  return picked;
 }
 
 /* ── Image helpers ──────────────────────────────────────── */
@@ -927,16 +1008,17 @@ function enemyBadgesMarkup(targets, totalEnemyCount){
 
 /* ── Hybrid ─────────────────────────────────────────────── */
 function scoreHybrid(sdcList,ctrList){
-  const VISIBLE_SDC = 30;
-  const VISIBLE_COUNTER = 10;
-  const ts=sdcList.slice(0, VISIBLE_SDC),tc=ctrList.slice(0, VISIBLE_COUNTER);
-  const sr=Object.fromEntries(ts.map((h,i)=>[h.name,i]));
-  const cr=Object.fromEntries(tc.map((h,i)=>[h.name,i]));
-  return ts.filter(h=>cr[h.name]!==undefined).map(h=>{
-    const c=tc[cr[h.name]];
+  const visibleSdc = sdcList.slice(0, 30);
+  const visibleCtr = ctrList.slice(0, 10);
+  const sdcDen = Math.max(visibleSdc.length, 1);
+  const ctrDen = Math.max(visibleCtr.length, 1);
+  const sr=Object.fromEntries(visibleSdc.map((h,i)=>[h.name,i]));
+  const cr=Object.fromEntries(visibleCtr.map((h,i)=>[h.name,i]));
+  return visibleSdc.filter(h=>cr[h.name]!==undefined).map(h=>{
+    const c=visibleCtr[cr[h.name]];
     return{
       name:h.name,r:h.r,
-      hybridScore:(1-sr[h.name]/VISIBLE_SDC)*0.9+(1-cr[h.name]/VISIBLE_COUNTER)*1.1+Math.max(0,c.counterScore)/60,
+      hybridScore:(1-sr[h.name]/sdcDen)*0.9+(1-cr[h.name]/ctrDen)*1.1+Math.max(0,c.counterScore)/60,
       sdcReason:h.sdcReason,counterReason:c.counterReason,counterTargets:c.counterTargets||[],spectralHits:c.spectralHits
     };
   }).sort((a,b)=>b.hybridScore-a.hybridScore);
@@ -1114,6 +1196,7 @@ function renderPool(){
     const div=document.createElement('div');
     div.className='hero-thumb'+(used.has(name)?' used':'');
     div.innerHTML=`${imgTagMarkup(name)}
+      <div class="hero-thumb-role">${rolePillMarkup(name)}</div>
       <div class="hero-thumb-name">${name}</div>
       <div class="hero-thumb-tags">
         <span class="mini-tag tag-s">S${r.s}</span>
@@ -1132,7 +1215,10 @@ function suggItemHtml({name,r,rank,reason,badgeHtml,cssClass,team,enemyTargets=[
     <div class="sugg-rank ${rc}">${rank}</div>
     ${imgTagMarkup(name,'sugg-img')}
     <div class="sugg-info">
-      <div class="sugg-name">${name}</div>
+      <div class="sugg-meta">
+        <div class="sugg-name">${name}</div>
+        ${rolePillMarkup(name)}
+      </div>
       <div class="sugg-reason">${reason}</div>
       <div class="sugg-scores">
         <span class="tag tag-s">S${r.s}</span><span class="tag tag-d">D${r.d}</span><span class="tag tag-c">C${r.c}</span>
@@ -1155,33 +1241,38 @@ function renderSuggestions(){
     sdcEl.innerHTML=ctrEl.innerHTML=hybEl.innerHTML=msg; return;
   }
 
-  const sdcList=scoreSdc(team);
-  const ctrList=scoreCounters(team);
-  const hybList=scoreHybrid(sdcList,ctrList);
+  const sdcList = scoreSdc(team);
+  const visibleSdcList = diversifyVisibleSdc(sdcList, 30);
+  const ctrList = scoreCounters(team);
+  const hybList = scoreHybrid(visibleSdcList, ctrList);
 
-  sdcEl.innerHTML=sdcList.slice(0,30).map((c,i)=>suggItemHtml({
+  const filteredSdc = visibleSdcList.filter(c => matchesRoleFilter(c.name));
+  const filteredCtr = ctrList.filter(c => matchesRoleFilter(c.name));
+  const filteredHyb = hybList.filter(c => matchesRoleFilter(c.name));
+
+  sdcEl.innerHTML=filteredSdc.map((c,i)=>suggItemHtml({
     name:c.name,r:c.r,rank:i+1,reason:c.sdcReason,badgeHtml:'',cssClass:'sdc-item',team,enemyTargets:[]
-  })).join('')||`<div class="no-sugg">No heroes available.</div>`;
+  })).join('')||`<div class="no-sugg">No heroes available for this role filter.</div>`;
 
   if(!state[foe].length){
     ctrEl.innerHTML=`<div class="no-sugg">Pick enemy heroes to see counter suggestions.</div>`;
   }else{
-    ctrEl.innerHTML=ctrList.slice(0,10).map((c,i)=>suggItemHtml({
+    ctrEl.innerHTML=filteredCtr.slice(0,10).map((c,i)=>suggItemHtml({
       name:c.name,r:c.r,rank:i+1,
       reason: c.counterTargets && c.counterTargets.length>=foeCount && foeCount>=2
         ? 'Counters the whole draft'
         : c.counterReason,
       badgeHtml:c.appearances>=2?`<span class="counter-count">×${c.appearances}</span>`:'',
       cssClass:'counter-item',team,enemyTargets:c.counterTargets||[],totalEnemyCount:foeCount
-    })).join('')||`<div class="no-sugg">No matchup data for current picks.</div>`;
+    })).join('')||`<div class="no-sugg">No matchup data for this role filter.</div>`;
   }
 
   if(!state[foe].length){
     hybEl.innerHTML=`<div class="no-sugg">Pick enemy heroes to see hybrid suggestions.</div>`;
-  }else if(!hybList.length){
+  }else if(!filteredHyb.length){
     hybEl.innerHTML=`<div class="no-sugg">No strong SDC + matchup overlap yet.</div>`;
   }else{
-    hybEl.innerHTML=hybList.slice(0,10).map((c,i)=>{
+    hybEl.innerHTML=filteredHyb.slice(0,10).map((c,i)=>{
       const isWholeDraft = c.counterTargets && c.counterTargets.length>=foeCount && foeCount>=2;
       const counterPart = isWholeDraft ? 'Counters whole draft' : c.counterReason;
       return suggItemHtml({
